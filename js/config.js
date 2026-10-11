@@ -14,7 +14,7 @@
   // Example: 'https://plantpulse.free.nf/api' or 'https://plantpulse.onrender.com/api'
   // Leave empty ('') to auto-detect based on current hosting domain!
   // ------------------------------------------------------------
-  const DEFAULT_CLOUD_API_URL = '';
+  const DEFAULT_CLOUD_API_URL = 'https://plantpulse-backend-qhlo.onrender.com/api';
 
   // Determine Base API URL dynamically
   function computeBaseUrl() {

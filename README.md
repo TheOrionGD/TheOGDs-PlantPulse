@@ -2,6 +2,9 @@
 
 **PlantPulse** is a complete IoT-enabled Plant Soil Moisture Monitoring & Irrigation Management System featuring a modern Web Application, Android Mobile App (WebView APK), and Cloud-Ready PHP/MySQL REST API with Hardware Sensor Ingestion (ESP32 / NodeMCU).
 
+🌐 **Live Cloud Deployment**: [https://plantpulse-backend-qhlo.onrender.com/](https://plantpulse-backend-qhlo.onrender.com/)  
+🏥 **API Health Check**: [https://plantpulse-backend-qhlo.onrender.com/api/health.php](https://plantpulse-backend-qhlo.onrender.com/api/health.php)
+
 ---
 
 ## ✨ Features
@@ -114,7 +117,7 @@ PlantPulse is optimized for zero-configuration deployment on **Render**:
    - `DB_SSL` (`true` if your cloud DB requires TLS)
    - `AUTH_SECRET_KEY` (a random secure string)
 6. Run [`database/render_schema.sql`](file:///o:/New%20folder%20%282%29/PLANTPULSE/database/render_schema.sql) in your cloud MySQL console to initialize tables and initial admin credentials (`admin@plantmonitor.com` / `admin123`).
-7. Once deployed, verify health at: `https://<your-service-name>.onrender.com/api/health.php`.
+7. Once deployed, verify health at: `https://plantpulse-backend-qhlo.onrender.com/api/health.php`.
 
 ---
 

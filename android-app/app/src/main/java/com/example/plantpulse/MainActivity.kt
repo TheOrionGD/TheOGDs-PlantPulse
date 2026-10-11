@@ -25,9 +25,8 @@ class MainActivity : ComponentActivity() {
         // CLOUD WEB & API URL CONFIGURATION
         // ========================================================
         // Production Cloud URLs (Render / Cloud HTTPS):
-        // Update to your Render Web Service URL (e.g. https://plantpulse-backend.onrender.com)
-        const val PRODUCTION_APP_URL = "https://plantpulse-backend.onrender.com/index.html"
-        const val PRODUCTION_API_URL = "https://plantpulse-backend.onrender.com/api"
+        const val PRODUCTION_APP_URL = "https://plantpulse-backend-qhlo.onrender.com/index.html"
+        const val PRODUCTION_API_URL = "https://plantpulse-backend-qhlo.onrender.com/api"
 
         // Local Development URLs (Emulator/XAMPP):
         const val LOCAL_DEV_APP_URL = "http://10.0.2.2/plant%20monitor%20app/index.html"
