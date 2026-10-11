@@ -13,14 +13,44 @@ if (empty($email) || empty($pass)) {
     respond(['success' => false, 'message' => 'Email and password are required'], 400);
 }
 
-// Built-in Demo Credentials Verification (Guaranteed to always work)
+// 1. Fetch user from database
+try {
+    $stmt = $pdo->prepare('SELECT id, name, email, password, role FROM users WHERE email = ?');
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    if ($user && password_verify($pass, $user['password'])) {
+        $_SESSION['user_id']    = (int) $user['id'];
+        $_SESSION['user_name']  = $user['name'];
+        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['user_role']  = $user['role'];
+
+        $token = generateAuthToken($user);
+
+        respond([
+            'success' => true,
+            'message' => 'Login successful!',
+            'token'   => $token,
+            'user'    => [
+                'id'    => (int) $user['id'],
+                'name'  => $user['name'],
+                'email' => $user['email'],
+                'role'  => $user['role']
+            ]
+        ]);
+    }
+} catch (Exception $e) {
+    // Continue to fallback check below if DB error occurs
+}
+
+// 2. Built-in Demo Credentials Verification fallback
 $isDemoBuyer = (strtolower($email) === 'buyer@example.com' && $pass === 'user123');
 $isDemoAdmin = (strtolower($email) === 'admin@plantmonitor.com' && $pass === 'admin123');
 
 if ($isDemoBuyer || $isDemoAdmin) {
     $role = $isDemoAdmin ? 'admin' : 'user';
-    $name = $isDemoAdmin ? 'System Admin' : 'Sithi Buyer';
-    $id   = $isDemoAdmin ? 1 : 101;
+    $name = $isDemoAdmin ? 'System Admin' : 'Demo Buyer';
+    $id   = $isDemoAdmin ? 1 : 2;
 
     $_SESSION['user_id']    = $id;
     $_SESSION['user_name']  = $name;
@@ -42,31 +72,4 @@ if ($isDemoBuyer || $isDemoAdmin) {
     ]);
 }
 
-// Fetch user with role from database
-$stmt = $pdo->prepare('SELECT id, name, email, password, role FROM users WHERE email = ?');
-$stmt->execute([$email]);
-$user = $stmt->fetch();
-
-if (!$user || !password_verify($pass, $user['password'])) {
-    respond(['success' => false, 'message' => 'Invalid email or password'], 401);
-}
-
-// Start session
-$_SESSION['user_id']    = $user['id'];
-$_SESSION['user_name']  = $user['name'];
-$_SESSION['user_email'] = $user['email'];
-$_SESSION['user_role']  = $user['role'];
-
-$token = generateAuthToken($user);
-
-respond([
-    'success' => true,
-    'message' => 'Login successful!',
-    'token'   => $token,
-    'user'    => [
-        'id'    => $user['id'],
-        'name'  => $user['name'],
-        'email' => $user['email'],
-        'role'  => $user['role']
-    ]
-]);
+respond(['success' => false, 'message' => 'Invalid email or password'], 401);
