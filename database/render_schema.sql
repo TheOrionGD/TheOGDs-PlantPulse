@@ -98,10 +98,6 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- Seed Default Admin Account (admin@plantmonitor.com / admin123)
-INSERT INTO users (id, name, email, password, role)
-VALUES (1, 'System Admin', 'admin@plantmonitor.com', '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', 'admin')
-ON DUPLICATE KEY UPDATE role = 'admin';
 
 -- Seed Hardware Sensor Catalog (Indian Rupees ₹)
 INSERT INTO sensor_catalog (id, name, plant_type, description, price, default_min_moisture, default_max_moisture, emoji)

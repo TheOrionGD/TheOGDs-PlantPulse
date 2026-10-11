@@ -40,36 +40,7 @@ try {
         ]);
     }
 } catch (Exception $e) {
-    // Continue to fallback check below if DB error occurs
-}
-
-// 2. Built-in Demo Credentials Verification fallback
-$isDemoBuyer = (strtolower($email) === 'buyer@example.com' && $pass === 'user123');
-$isDemoAdmin = (strtolower($email) === 'admin@plantmonitor.com' && $pass === 'admin123');
-
-if ($isDemoBuyer || $isDemoAdmin) {
-    $role = $isDemoAdmin ? 'admin' : 'user';
-    $name = $isDemoAdmin ? 'System Admin' : 'Demo Buyer';
-    $id   = $isDemoAdmin ? 1 : 2;
-
-    $_SESSION['user_id']    = $id;
-    $_SESSION['user_name']  = $name;
-    $_SESSION['user_email'] = $email;
-    $_SESSION['user_role']  = $role;
-
-    $token = generateAuthToken(['id' => $id, 'role' => $role, 'name' => $name, 'email' => $email]);
-
-    respond([
-        'success' => true,
-        'message' => 'Login successful!',
-        'token'   => $token,
-        'user'    => [
-            'id'    => $id,
-            'name'  => $name,
-            'email' => $email,
-            'role'  => $role
-        ]
-    ]);
+    respond(['success' => false, 'message' => 'Authentication service error. Please try again.'], 500);
 }
 
 respond(['success' => false, 'message' => 'Invalid email or password'], 401);
