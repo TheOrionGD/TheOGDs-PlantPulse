@@ -235,19 +235,49 @@
     showDemoFeedback('🛠 Admin credentials loaded! Form ready for inspection.');
   });
 
+  async function performLogin(email, password, fallbackTarget = 'dashboard.html') {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPass  = password.trim();
+
+    try {
+      const res = await fetch(`${BASE_URL}/auth/login.php`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, password: cleanPass })
+      });
+      const data = await res.json();
+      if (data && data.success && data.user) {
+        const dest = (data.user.role === 'admin') ? 'admin.html' : 'dashboard.html';
+        completeLogin(data.user, data.token, dest);
+        return { success: true };
+      } else {
+        return { success: false, message: data?.message || 'Invalid email or password.' };
+      }
+    } catch (err) {
+      // Offline fallback for demo accounts
+      const demo = DEMO_ACCOUNTS[cleanEmail];
+      if (demo && (cleanPass.toLowerCase() === demo.pass.toLowerCase())) {
+        completeLogin(demo.user, 'offline_session', fallbackTarget || demo.target);
+        return { success: true };
+      }
+      return { success: false, message: 'Connection error. Check cloud backend or server status.' };
+    }
+  }
+
   // Quick 1-Click Demo Fill & Instant Login (Zero Error Guarantee)
-  document.getElementById('demo-user-btn')?.addEventListener('click', () => {
+  document.getElementById('demo-user-btn')?.addEventListener('click', async () => {
     document.getElementById('email').value = 'buyer@example.com';
     document.getElementById('password').value = 'user123';
     showDemoFeedback('⚡ Signing in to Buyer Portal…');
-    completeLogin(DEMO_ACCOUNTS['buyer@example.com'].user, 'demo_token_' + Date.now(), 'dashboard.html');
+    await performLogin('buyer@example.com', 'user123', 'dashboard.html');
   });
 
-  document.getElementById('demo-admin-btn')?.addEventListener('click', () => {
+  document.getElementById('demo-admin-btn')?.addEventListener('click', async () => {
     document.getElementById('email').value = 'admin@plantmonitor.com';
     document.getElementById('password').value = 'admin123';
     showDemoFeedback('⚡ Signing in to Admin Studio…');
-    completeLogin(DEMO_ACCOUNTS['admin@plantmonitor.com'].user, 'demo_token_' + Date.now(), 'admin.html');
+    await performLogin('admin@plantmonitor.com', 'admin123', 'admin.html');
   });
 
   document.getElementById('login-form').addEventListener('submit', async e => {
@@ -272,38 +302,9 @@
     btn.textContent = '⏳ Logging in…';
     errEl.className = 'alert-msg';
 
-    // 1. INSTANT ZERO-ERROR DEMO AUTH CHECK
-    const demo = DEMO_ACCOUNTS[cleanEmail];
-    if (demo && (cleanPass.toLowerCase() === demo.pass.toLowerCase())) {
-      completeLogin(demo.user, 'demo_token_' + Date.now(), demo.target);
-      return;
-    }
-
-    // 2. BACKEND FETCH FOR CUSTOM ACCOUNTS
-    try {
-      const res  = await fetch(`${BASE_URL}/auth/login.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, password: cleanPass })
-      });
-      const data = await res.json();
-
-      if (data && data.success) {
-        const dest = (data.user && data.user.role === 'admin') ? 'admin.html' : 'dashboard.html';
-        completeLogin(data.user, data.token, dest);
-        return;
-      } else {
-        errEl.textContent = (data && data.message) ? data.message : 'Invalid email or password.';
-        errEl.className = 'alert-msg show error';
-        btn.disabled = false;
-        btn.textContent = 'Login to Dashboard';
-      }
-    } catch (err) {
-      if (demo) {
-        errEl.textContent = 'Password incorrect. Password is: ' + demo.pass;
-      } else {
-        errEl.textContent = 'Connection error. Check cloud backend or server status.';
-      }
+    const result = await performLogin(cleanEmail, cleanPass);
+    if (!result.success) {
+      errEl.textContent = result.message;
       errEl.className = 'alert-msg show error';
       btn.disabled = false;
       btn.textContent = 'Login to Dashboard';
