@@ -289,12 +289,17 @@
       return createJsonResponse({ success: true, catalog: store.getCatalog() });
     }
 
-    // Reject mock fallback for Order and Admin Management endpoints to enforce true backend persistence
-    if (cleanUrl.includes('/orders/') || cleanUrl.includes('/admin/')) {
+    // Reject mock fallback for Order, Admin, and User Authentication endpoints to enforce true backend persistence
+    if (
+      cleanUrl.includes('/orders/') ||
+      cleanUrl.includes('/admin/') ||
+      cleanUrl.includes('/auth/register.php') ||
+      cleanUrl.includes('/auth/login.php')
+    ) {
       return createJsonResponse({
         success: false,
         error: 'BACKEND_NOT_CONFIGURED',
-        message: 'Order and Admin synchronization requires an active shared backend server with database.'
+        message: 'Order, Admin, and Account operations require an active database backend. Cloud service may be waking up, please retry.'
       }, 503);
     }
 
@@ -439,7 +444,10 @@
         options.credentials = 'include';
       }
 
-      const isOrderOrAdminCall = url.includes('/orders/') || url.includes('/admin/');
+      const isStrictBackendCall = url.includes('/orders/') ||
+        url.includes('/admin/') ||
+        url.includes('/auth/register.php') ||
+        url.includes('/auth/login.php');
 
       try {
         const res = await _nativeFetch(resource, options);
@@ -450,25 +458,25 @@
           return res;
         }
 
-        // For orders and admin management: never fabricate success or save to localStorage!
-        if (isOrderOrAdminCall) {
+        // For orders, admin, and authentication: never fabricate success or save to localStorage!
+        if (isStrictBackendCall) {
           console.error('[PlantPulse] Shared backend returned non-JSON response from: ' + url);
           return createJsonResponse({
             success: false,
             error: 'BACKEND_NOT_CONFIGURED',
-            message: 'Shared backend API unreachable. When running on GitHub Pages, configure your Cloud Backend API URL (e.g., InfinityFree or Render) to synchronize orders across devices.'
+            message: 'Shared backend API unreachable or server is waking up. Please retry in a moment.'
           }, 503);
         }
 
         // If backend returned non-JSON (e.g. raw PHP text or HTML error page), fallback for read-only
         return synthesizeMockApiResponse(url, options);
       } catch (err) {
-        if (isOrderOrAdminCall) {
-          console.error('[PlantPulse] Network error for Order/Admin call: ' + url, err);
+        if (isStrictBackendCall) {
+          console.error('[PlantPulse] Network error for backend call: ' + url, err);
           return createJsonResponse({
             success: false,
             error: 'NETWORK_FAILURE',
-            message: 'Could not connect to shared backend at ' + url + '. Please check network connection and Cloud API URL setting.'
+            message: 'Could not connect to database backend at ' + url + '. If hosted on Render, the free server may be spinning up (takes ~30-50 seconds). Please retry.'
           }, 503);
         }
         // Network offline, timeout, or DNS failure -> seamless fallback

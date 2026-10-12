@@ -111,7 +111,7 @@
       });
       const data = await res.json();
 
-      if (data.success) {
+      if (data && data.success && data.user) {
         localStorage.setItem('pm_user', JSON.stringify(data.user));
         if (data.token) {
           localStorage.setItem('pm_token', data.token);
@@ -120,7 +120,7 @@
         msgEl.className = 'alert-msg show success';
         setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
       } else {
-        msgEl.textContent = data.message;
+        msgEl.textContent = data?.message || 'Account creation failed. Please check backend connection and retry.';
         msgEl.className = 'alert-msg show error';
         btn.disabled = false;
         btn.textContent = '🌱 Create Account';
